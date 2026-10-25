@@ -15,8 +15,8 @@ DEBUG = env("DJANGO_DEBUG", "1") == "1"
 ALLOWED_HOSTS = [
     h.strip() for h in env("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1").split(",") if h.strip()
 ]
-
 INSTALLED_APPS = [
+    "projects",
     "users",
     "django.contrib.admin",
     "django.contrib.auth",
