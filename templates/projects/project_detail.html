@@ -31,18 +31,6 @@
   {% if user.is_authenticated and user == project.author %}
     <a href="{% url 'projects:edit' project.pk %}"
        class="btn btn-outline-primary">Редактировать проект</a>
-    {% if project.status == "active" %}
-      <form method="post" action="{% url 'projects:finish' project.pk %}"
-            class="d-inline">
-        {% csrf_token %}
-        <button type="submit" class="btn btn-outline-warning">Завершить проект</button>
-      </form>
-    {% endif %}
-  {% elif user.is_authenticated and not is_member %}
-    <form method="post" action="{% url 'projects:join' project.pk %}" class="d-inline">
-      {% csrf_token %}
-      <button type="submit" class="btn btn-primary">Присоединиться</button>
-    </form>
   {% endif %}
   <button type="button" class="btn btn-outline-secondary" id="share-project-link">
     Поделиться ссылкой на проект

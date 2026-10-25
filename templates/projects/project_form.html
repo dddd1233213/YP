@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}
+{% if project %}Редактировать проект — Team Finder{% else %}Новый проект — Team Finder{% endif %}
+{% endblock %}
+{% block content %}
+<h1>{% if project %}Редактировать проект{% else %}Новый проект{% endif %}</h1>
+<form method="post">
+  {% csrf_token %}
+  {% if form.non_field_errors %}
+    <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+  {% endif %}
+  {% for field in form %}
+    <div class="mb-3">
+      <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+      {{ field }}
+      {% if field.errors %}
+        <div class="text-danger">{{ field.errors }}</div>
+      {% endif %}
+    </div>
+  {% endfor %}
+  <button type="submit" class="btn btn-primary">Сохранить</button>
+</form>
+{% endblock %}
