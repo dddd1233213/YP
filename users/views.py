@@ -63,6 +63,12 @@ class ProfileDetailView(DetailView):
     template_name = "users/profile_detail.html"
     context_object_name = "profile_user"
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["user_projects"] = self.object.projects.order_by(
+            "-created_at")
+        return context
+
 
 class ProfileUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = User

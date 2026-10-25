@@ -65,6 +65,47 @@ class ProfileViewTests(TestCase):
         response = self.client.get(reverse("users:profile", args=[user.pk]))
         self.assertContains(response, "Поделиться профилем")
 
+    def test_owner_sees_all_three_buttons(self):
+        owner = make_user("owner@example.com")
+        self.client.login(username="owner@example.com",
+                          password="StrongPass123!")
+        response = self.client.get(reverse("users:profile",
+                                           args=[owner.pk]))
+        self.assertContains(response, "Редактировать профиль")
+        self.assertContains(response, "Добавить проект")
+        self.assertContains(response, "Поделиться профилем")
+
+
+class ProfileProjectsTests(TestCase):
+    def test_owner_projects_visible_to_guest(self):
+        from projects.models import Project
+        owner = make_user("owner@example.com")
+        old = Project.objects.create(
+            title="Старый проект", author=owner,
+            description="старый")
+        new = Project.objects.create(
+            title="Новый проект", author=owner,
+            description="новый")
+        other = make_user("other@example.com")
+        Project.objects.create(
+            title="Чужой проект", author=other, description="чужой")
+        response = self.client.get(reverse("users:profile", args=[owner.pk]))
+        self.assertContains(response, "Старый проект")
+        self.assertContains(response, "Новый проект")
+        self.assertNotContains(response, "Чужой проект")
+        content = response.content.decode()
+        self.assertLess(content.index("Новый проект"),
+                        content.index("Старый проект"))
+        self.assertContains(
+            response, reverse("projects:detail", args=[new.pk]))
+        self.assertContains(
+            response, reverse("projects:detail", args=[old.pk]))
+
+    def test_empty_projects_text(self):
+        user = make_user("ivan@example.com")
+        response = self.client.get(reverse("users:profile", args=[user.pk]))
+        self.assertContains(response, "Пока нет проектов.")
+
 
 class UserListViewTests(TestCase):
     def test_list_200_ordering_and_pagination(self):

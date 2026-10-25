@@ -18,6 +18,8 @@
     {% if user == profile_user %}
       <a href="{% url 'users:profile_edit' profile_user.pk %}"
          class="btn btn-primary">Редактировать профиль</a>
+      <a href="{% url 'projects:create' %}"
+         class="btn btn-outline-primary mt-2">Добавить проект</a>
     {% endif %}
     <button type="button" class="btn btn-outline-secondary mt-2"
             data-share-url="{{ request.build_absolute_uri }}">
@@ -39,7 +41,27 @@
         {% endif %}
       </ul>
     </details>
-    <!-- Task 4: user projects list -->
+    <h4 class="mt-4">Проекты</h4>
+    <ul class="list-group">
+      {% for project in user_projects %}
+        <li class="list-group-item d-flex justify-content-between
+                   align-items-center">
+          <a href="{% url 'projects:detail' project.pk %}">
+            {{ project.title }}
+          </a>
+          <span>
+            {{ project.created_at|date:"d.m.Y" }}
+            {% if project.status == "finished" %}
+              <span class="badge bg-secondary">Завершён</span>
+            {% else %}
+              <span class="badge bg-success">Активен</span>
+            {% endif %}
+          </span>
+        </li>
+      {% empty %}
+        <li class="list-group-item text-muted">Пока нет проектов.</li>
+      {% endfor %}
+    </ul>
   </div>
 </div>
 {% endblock %}
