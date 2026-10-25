@@ -43,7 +43,8 @@
       <button type="submit" class="btn btn-primary">Присоединиться</button>
     </form>
   {% endif %}
-  <button type="button" class="btn btn-outline-secondary" id="share-project-link">
+  <button type="button" class="btn btn-outline-secondary"
+          data-share-url="{{ request.build_absolute_uri }}">
     Поделиться ссылкой на проект
   </button>
 </div>
@@ -59,4 +60,8 @@
     <li class="list-group-item text-muted">Пока нет участников.</li>
   {% endfor %}
 </ul>
+{% endblock %}
+{% block extra_js %}
+{% load static %}
+<script src="{% static 'js/share.js' %}"></script>
 {% endblock %}

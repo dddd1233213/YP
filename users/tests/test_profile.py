@@ -60,6 +60,11 @@ class ProfileViewTests(TestCase):
         response = self.client.get(reverse("users:profile", args=[user.pk]))
         self.assertContains(response, "Посмотреть контакты")
 
+    def test_share_button_visible_to_guest(self):
+        user = make_user("ivan@example.com")
+        response = self.client.get(reverse("users:profile", args=[user.pk]))
+        self.assertContains(response, "Поделиться профилем")
+
 
 class UserListViewTests(TestCase):
     def test_list_200_ordering_and_pagination(self):
