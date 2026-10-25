@@ -61,6 +61,22 @@ class ProfileViewTests(TestCase):
         self.assertContains(response, "Посмотреть контакты")
 
 
+class UserListViewTests(TestCase):
+    def test_list_200_ordering_and_pagination(self):
+        for i in range(13):
+            make_user(f"user{i:02d}@example.com")
+        url = reverse("users:list")
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        page_users = list(response.context["users"])
+        self.assertEqual(len(page_users), 12)
+        joined = [u.date_joined for u in page_users]
+        self.assertEqual(joined, sorted(joined, reverse=True))
+        response2 = self.client.get(url + "?page=2")
+        self.assertEqual(response2.status_code, 200)
+        self.assertEqual(len(list(response2.context["users"])), 1)
+
+
 class ProfileFormAvatarTests(TestCase):
     def test_avatar_oversize_non_image_invalid(self):
         from users.forms import ProfileForm

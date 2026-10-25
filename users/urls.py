@@ -8,6 +8,7 @@ from users.views import (
     ProfileDetailView,
     ProfileUpdateView,
     RegisterView,
+    UserListView,
 )
 
 app_name = "users"
@@ -22,6 +23,7 @@ urlpatterns = [
         PasswordChangeDoneView.as_view(template_name="users/password_change_done.html"),
         name="password_change_done",
     ),
+    path("list/", UserListView.as_view(), name="list"),
     path("<int:pk>/", ProfileDetailView.as_view(), name="profile"),
     path("<int:pk>/edit/", ProfileUpdateView.as_view(), name="profile_edit"),
 ]

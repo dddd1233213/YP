@@ -6,7 +6,7 @@ from django.contrib.auth.views import (
     PasswordChangeView,
 )
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, DetailView, UpdateView
+from django.views.generic import CreateView, DetailView, ListView, UpdateView
 
 from users.forms import (
     CustomPasswordChangeForm,
@@ -64,3 +64,11 @@ class ProfileUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     def form_valid(self, form):
         messages.success(self.request, "Профиль обновлён.")
         return super().form_valid(form)
+
+
+class UserListView(ListView):
+    model = User
+    template_name = "users/user_list.html"
+    context_object_name = "users"
+    paginate_by = 12
+    ordering = "-date_joined"
