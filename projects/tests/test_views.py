@@ -180,3 +180,16 @@ class ProjectDetailViewTests(TestCase):
         response = self.client.get(reverse("projects:detail", args=[project.pk]))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Поделиться")
+
+    def test_share_js_absolute_static_url(self):
+        from django.urls import reverse as url_reverse
+        owner = make_user("owner@example.com")
+        project = make_project(owner)
+        user = make_user("ivan@example.com")
+        for url in (
+            url_reverse("users:profile", args=[user.pk]),
+            url_reverse("projects:detail", args=[project.pk]),
+        ):
+            response = self.client.get(url)
+            self.assertEqual(response.status_code, 200)
+            self.assertContains(response, 'src="/static/js/share.js"')
