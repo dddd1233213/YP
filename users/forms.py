@@ -45,3 +45,19 @@ class LoginForm(BootstrapFormMixin, AuthenticationForm):
 
 class CustomPasswordChangeForm(BootstrapFormMixin, PasswordChangeForm):
     pass
+
+
+def validate_avatar(value):
+    if value.content_type not in ("image/jpeg", "image/png",
+                                  "image/gif", "image/webp"):
+        raise forms.ValidationError("Загрузите файл изображения (JPEG/PNG/GIF/WebP).")
+    if value.size > 2 * 1024 * 1024:
+        raise forms.ValidationError("Размер аватара не должен превышать 2 МБ.")
+
+
+class ProfileForm(BootstrapFormMixin, forms.ModelForm):
+    avatar = forms.ImageField(required=False, validators=[validate_avatar])
+
+    class Meta:
+        model = User
+        fields = ("first_name", "last_name", "bio", "phone", "github", "avatar")

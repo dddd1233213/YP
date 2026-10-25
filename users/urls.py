@@ -5,6 +5,8 @@ from users.views import (
     CustomLoginView,
     CustomLogoutView,
     CustomPasswordChangeView,
+    ProfileDetailView,
+    ProfileUpdateView,
     RegisterView,
 )
 
@@ -20,4 +22,6 @@ urlpatterns = [
         PasswordChangeDoneView.as_view(template_name="users/password_change_done.html"),
         name="password_change_done",
     ),
+    path("<int:pk>/", ProfileDetailView.as_view(), name="profile"),
+    path("<int:pk>/edit/", ProfileUpdateView.as_view(), name="profile_edit"),
 ]
