@@ -32,6 +32,14 @@
           <a href="{% url 'users:profile' u.pk %}" class="btn btn-sm btn-outline-primary">
             Профиль
           </a>
+          <details class="mt-2">
+            <summary class="btn btn-outline-info btn-sm">Посмотреть контакты</summary>
+            <ul class="list-unstyled mt-2">
+              <li>Email: {{ u.email }}</li>
+              {% if u.phone %}<li>Телефон: {{ u.phone }}</li>{% endif %}
+              {% if u.github %}<li><a href="{{ u.github }}">GitHub</a></li>{% endif %}
+            </ul>
+          </details>
         </div>
       </div>
     </div>

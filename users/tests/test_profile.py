@@ -122,6 +122,18 @@ class UserListViewTests(TestCase):
         self.assertEqual(response2.status_code, 200)
         self.assertEqual(len(list(response2.context["users"])), 1)
 
+    def test_cards_show_contacts(self):
+        make_user(
+            "a@example.com", phone="+70000000001",
+            github="https://github.com/a")
+        make_user("b@example.com")
+        response = self.client.get(reverse("users:list"))
+        self.assertEqual(response.status_code, 200)
+        users = list(response.context["users"])
+        self.assertContains(
+            response, "Посмотреть контакты", count=len(users))
+        self.assertContains(response, "a@example.com")
+
 
 class ProfileFormAvatarTests(TestCase):
     def test_avatar_oversize_non_image_invalid(self):
