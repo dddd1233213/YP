@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Проекты — Team Finder{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1>Проекты</h1>
+</div>
+{% for project in projects %}
+  {% include "projects/_card.html" with project=project fav_ids=fav_ids %}
+{% empty %}
+  <p>Проектов пока нет.</p>
+{% endfor %}
+{% if is_paginated %}
+  <nav aria-label="Страницы">
+    <ul class="pagination">
+      {% if page_obj.has_previous %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Назад</a>
+        </li>
+      {% endif %}
+      <li class="page-item disabled">
+        <span class="page-link">
+          Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}
+        </span>
+      </li>
+      {% if page_obj.has_next %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ page_obj.next_page_number }}">Вперёд</a>
+        </li>
+      {% endif %}
+    </ul>
+  </nav>
+{% endif %}
+{% endblock %}
