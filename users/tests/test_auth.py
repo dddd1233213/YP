@@ -56,3 +56,35 @@ class AuthViewTests(TestCase):
     def test_password_change_requires_login(self):
         response = self.client.get(PASSWORD_CHANGE_URL)
         self.assertEqual(response.status_code, 302)
+
+
+class NavbarTests(TestCase):
+    def _make_user(self):
+        return User.objects.create_user(
+            email="ivan@example.com",
+            password="StrongPass123!",
+            first_name="Иван",
+            last_name="Петров",
+        )
+
+    def test_guest_sees_login_register_no_favorites_logout(self):
+        response = self.client.get(reverse("home"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Войти")
+        self.assertContains(response, "Регистрация")
+        self.assertNotContains(response, "Избранное")
+        self.assertNotContains(response, "Выйти")
+
+    def test_authenticated_sees_profile_favorites_logout(self):
+        self._make_user()
+        self.client.login(username="ivan@example.com", password="StrongPass123!")
+        response = self.client.get(reverse("home"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Избранное")
+        self.assertContains(response, "Выйти")
+
+    def test_logout_via_post_302(self):
+        self._make_user()
+        self.client.login(username="ivan@example.com", password="StrongPass123!")
+        response = self.client.post(LOGOUT_URL)
+        self.assertEqual(response.status_code, 302)
