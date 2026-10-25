@@ -28,6 +28,10 @@ class User(AbstractUser):
     email = models.EmailField("email", unique=True)
     first_name = models.CharField("имя", max_length=150)
     last_name = models.CharField("фамилия", max_length=150)
+    bio = models.TextField("о себе", blank=True)
+    phone = models.CharField("телефон", max_length=32, blank=True)
+    github = models.URLField("github", blank=True)
+    avatar = models.ImageField("аватар", upload_to="avatars/", blank=True)
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["first_name", "last_name"]
