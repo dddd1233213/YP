@@ -17,6 +17,16 @@ from users.forms import (
 from users.models import User
 
 
+FILTERS = {
+    "my_projects_participants": lambda user: User.objects.filter(
+        membership__project__author=user
+    ).distinct(),
+    "teammates": lambda user: User.objects.filter(
+        projects__memberships__user=user
+    ).distinct(),
+}
+
+
 class RegisterView(CreateView):
     form_class = RegisterForm
     template_name = "users/register.html"
@@ -72,3 +82,21 @@ class UserListView(ListView):
     context_object_name = "users"
     paginate_by = 12
     ordering = "-date_joined"
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        filter_name = self.request.GET.get("filter")
+        if not self.request.user.is_authenticated:
+            return queryset
+        if filter_name not in FILTERS:
+            return queryset
+        return FILTERS[filter_name](self.request.user).order_by("-date_joined")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        filter_name = self.request.GET.get("filter")
+        if self.request.user.is_authenticated and filter_name in FILTERS:
+            context["active_filter"] = filter_name
+        else:
+            context["active_filter"] = ""
+        return context

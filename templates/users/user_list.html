@@ -2,6 +2,19 @@
 {% block title %}Пользователи{% endblock %}
 {% block content %}
 <h1>Пользователи</h1>
+{% if user.is_authenticated %}
+  <div class="mb-3">
+    <a href="?filter=my_projects_participants"
+       class="{% if active_filter == 'my_projects_participants' %}active{% endif %}">
+      Участники моих проектов
+    </a>
+    <a href="?filter=teammates"
+       class="{% if active_filter == 'teammates' %}active{% endif %}">
+      Авторы проектов, в которых я участвую
+    </a>
+    <a href="{% url 'users:list' %}">Сбросить</a>
+  </div>
+{% endif %}
 <div class="row">
   {% for u in users %}
     <div class="col-md-4 mb-3">
@@ -23,7 +36,7 @@
     <ul class="pagination">
       {% if page_obj.has_previous %}
         <li class="page-item">
-          <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Назад</a>
+          <a class="page-link" href="?{% if active_filter %}filter={{ active_filter }}&{% endif %}page={{ page_obj.previous_page_number }}">Назад</a>
         </li>
       {% endif %}
       <li class="page-item disabled">
@@ -31,7 +44,7 @@
       </li>
       {% if page_obj.has_next %}
         <li class="page-item">
-          <a class="page-link" href="?page={{ page_obj.next_page_number }}">Вперёд</a>
+          <a class="page-link" href="?{% if active_filter %}filter={{ active_filter }}&{% endif %}page={{ page_obj.next_page_number }}">Вперёд</a>
         </li>
       {% endif %}
     </ul>
