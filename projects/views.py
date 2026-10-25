@@ -18,7 +18,12 @@ class HomeView(ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["fav_ids"] = set()
+        user = self.request.user
+        if user.is_authenticated:
+            context["fav_ids"] = set(
+                user.favorites.values_list("project_id", flat=True))
+        else:
+            context["fav_ids"] = set()
         return context
 
 
@@ -35,8 +40,14 @@ class ProjectDetailView(DetailView):
             user.is_authenticated
             and Membership.objects.filter(user=user, project=project).exists()
         )
-        context["is_fav"] = False  # Task 6 wires real state
-        context["fav_ids"] = set()
+        if user.is_authenticated:
+            context["is_fav"] = project.favorited_by.filter(
+                user=user).exists()
+            context["fav_ids"] = set(
+                user.favorites.values_list("project_id", flat=True))
+        else:
+            context["is_fav"] = False
+            context["fav_ids"] = set()
         context["participants"] = project.memberships.select_related("user").all()
         return context
 

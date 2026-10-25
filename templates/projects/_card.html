@@ -11,8 +11,7 @@
         </a>
       </div>
       {% if user.is_authenticated %}
-        <form method="post" action="/favorites/toggle/{{ project.pk }}/">
-          {# Task 6: switch to url tag #}
+        <form method="post" action="{% url 'favorites:toggle' project.pk %}">
           {% csrf_token %}
           <input type="hidden" name="next" value="{{ request.path }}">
           <button type="submit" class="btn btn-sm btn-outline-secondary"

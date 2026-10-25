@@ -92,3 +92,44 @@ class ToggleFavoriteTests(TestCase):
             response.url,
             reverse("projects:detail", args=[self.project.pk]),
         )
+
+
+class FavoriteListTests(TestCase):
+    def setUp(self):
+        self.me = make_user("me@example.com")
+        self.url = reverse("favorites:list")
+
+    def test_guest_redirected_with_next(self):
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 302)
+        self.assertIn(reverse("users:login"), response.url)
+        self.assertIn("next=", response.url)
+
+    def test_shows_only_own_favorites(self):
+        other = make_user("other@example.com")
+        mine = Project.objects.create(title="Мой", author=other)
+        theirs = Project.objects.create(title="Чужой", author=self.me)
+        from favorites.models import Favorite
+        Favorite.objects.create(user=self.me, project=mine)
+        Favorite.objects.create(user=other, project=theirs)
+        self.client.force_login(self.me)
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        got = list(response.context["favorites"])
+        self.assertEqual(len(got), 1)
+        self.assertEqual(got[0].project.pk, mine.pk)
+
+    def test_pagination(self):
+        other = make_user("other@example.com")
+        from favorites.models import Favorite
+        for i in range(13):
+            project = Project.objects.create(
+                title=f"Проект {i}", author=other)
+            Favorite.objects.create(user=self.me, project=project)
+        self.client.force_login(self.me)
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.context["is_paginated"])
+        self.assertEqual(len(list(response.context["favorites"])), 12)
+        response2 = self.client.get(self.url, {"page": 2})
+        self.assertEqual(len(list(response2.context["favorites"])), 1)
