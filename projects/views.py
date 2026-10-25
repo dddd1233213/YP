@@ -1,6 +1,9 @@
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.core.exceptions import PermissionDenied
+from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
+from django.views import View
 from django.views.generic import CreateView, DetailView, ListView, UpdateView
 
 from projects.forms import ProjectEditForm, ProjectForm
@@ -71,3 +74,33 @@ class ProjectUpdateView(LoginRequiredMixin, OwnerRequiredMixin, UpdateView):
 
     def get_success_url(self):
         return reverse("projects:detail", args=[self.object.pk])
+
+
+class JoinView(LoginRequiredMixin, View):
+    def post(self, request, pk):
+        project = get_object_or_404(Project, pk=pk)
+        if project.author == request.user:
+            messages.info(request, "Вы автор этого проекта.")
+            return redirect("projects:detail", pk=project.pk)
+        membership, created = Membership.objects.get_or_create(
+            user=request.user, project=project
+        )
+        if created:
+            messages.success(request, "Вы присоединились к проекту.")
+        else:
+            messages.info(request, "Вы уже участник этого проекта.")
+        return redirect("projects:detail", pk=project.pk)
+
+
+class FinishView(LoginRequiredMixin, View):
+    def post(self, request, pk):
+        project = get_object_or_404(Project, pk=pk)
+        if project.author != request.user:
+            raise PermissionDenied
+        if project.status == Project.Status.ACTIVE:
+            project.status = Project.Status.FINISHED
+            project.save(update_fields=["status"])
+            messages.success(request, "Проект завершён.")
+        else:
+            messages.info(request, "Проект уже завершён.")
+        return redirect("projects:detail", pk=project.pk)

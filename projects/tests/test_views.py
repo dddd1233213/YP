@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.urls import reverse
 
-from projects.models import Project
+from projects.models import Membership, Project
 from users.models import User
 
 
@@ -98,6 +98,78 @@ class ProjectUpdateViewTests(TestCase):
         self.assertRedirects(response, reverse("projects:detail", args=[project.pk]))
         project.refresh_from_db()
         self.assertEqual(project.title, "Обновлённый")
+        self.assertEqual(project.status, Project.Status.FINISHED)
+
+
+class JoinViewTests(TestCase):
+    def test_guest_redirected_to_login(self):
+        owner = make_user("owner@example.com")
+        project = make_project(owner)
+        response = self.client.post(reverse("projects:join", args=[project.pk]))
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("/users/login/", response["Location"])
+
+    def test_owner_post_no_membership(self):
+        make_user("owner@example.com")
+        self.client.login(username="owner@example.com", password="StrongPass123!")
+        project = make_project(User.objects.get(email="owner@example.com"))
+        response = self.client.post(reverse("projects:join", args=[project.pk]))
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(Membership.objects.count(), 0)
+        response = self.client.get(reverse("projects:detail", args=[project.pk]))
+        self.assertNotContains(response, "Присоединиться")
+
+    def test_other_post_creates_membership(self):
+        make_project(make_user("owner@example.com"))
+        make_user("member@example.com")
+        self.client.login(username="member@example.com", password="StrongPass123!")
+        project = Project.objects.get()
+        response = self.client.post(reverse("projects:join", args=[project.pk]))
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(Membership.objects.filter(
+            user__email="member@example.com", project=project).exists())
+
+    def test_double_post_no_duplicate_no_500(self):
+        make_project(make_user("owner@example.com"))
+        make_user("member@example.com")
+        self.client.login(username="member@example.com", password="StrongPass123!")
+        project = Project.objects.get()
+        url = reverse("projects:join", args=[project.pk])
+        self.client.post(url)
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(Membership.objects.filter(project=project).count(), 1)
+
+
+class FinishViewTests(TestCase):
+    def test_finish_by_other_forbidden(self):
+        owner = make_user("owner@example.com")
+        make_user("other@example.com")
+        project = make_project(owner)
+        self.client.login(username="other@example.com", password="StrongPass123!")
+        response = self.client.post(reverse("projects:finish", args=[project.pk]))
+        self.assertEqual(response.status_code, 403)
+        project.refresh_from_db()
+        self.assertEqual(project.status, Project.Status.ACTIVE)
+
+    def test_owner_post_finishes(self):
+        make_user("owner@example.com")
+        self.client.login(username="owner@example.com", password="StrongPass123!")
+        project = make_project(User.objects.get(email="owner@example.com"))
+        response = self.client.post(reverse("projects:finish", args=[project.pk]))
+        self.assertEqual(response.status_code, 302)
+        project.refresh_from_db()
+        self.assertEqual(project.status, Project.Status.FINISHED)
+
+    def test_double_finish_no_error(self):
+        make_user("owner@example.com")
+        self.client.login(username="owner@example.com", password="StrongPass123!")
+        project = make_project(User.objects.get(email="owner@example.com"))
+        url = reverse("projects:finish", args=[project.pk])
+        self.client.post(url)
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, 302)
+        project.refresh_from_db()
         self.assertEqual(project.status, Project.Status.FINISHED)
 
 
