@@ -24,6 +24,12 @@ FILTERS = {
     "teammates": lambda user: User.objects.filter(
         projects__memberships__user=user
     ).distinct(),
+    "favorite_authors": lambda user: User.objects.filter(
+        projects__favorited_by__user=user
+    ).exclude(pk=user.pk).distinct(),
+    "fans": lambda user: User.objects.filter(
+        favorites__project__author=user
+    ).exclude(pk=user.pk).distinct(),
 }
 
 

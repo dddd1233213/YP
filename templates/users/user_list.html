@@ -12,6 +12,14 @@
        class="{% if active_filter == 'teammates' %}active{% endif %}">
       Авторы проектов, в которых я участвую
     </a>
+    <a href="?filter=favorite_authors"
+       class="{% if active_filter == 'favorite_authors' %}active{% endif %}">
+      Авторы избранного
+    </a>
+    <a href="?filter=fans"
+       class="{% if active_filter == 'fans' %}active{% endif %}">
+      Поклонники
+    </a>
     <a href="{% url 'users:list' %}">Сбросить</a>
   </div>
 {% endif %}

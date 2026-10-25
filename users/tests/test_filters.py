@@ -62,6 +62,44 @@ class UserListFilterTests(TestCase):
             )],
         )
 
+    def test_favorite_authors(self):
+        from favorites.models import Favorite
+        Favorite.objects.create(user=self.me, project=self.projects[2])
+        Favorite.objects.create(user=self.me, project=self.projects[3])
+        Favorite.objects.create(
+            user=self.me,
+            project=Project.objects.create(
+                title="Свой", author=self.me))
+        response = self.client.get(self.url, {"filter": "favorite_authors"})
+        self.assertEqual(response.status_code, 200)
+        got = list(response.context["users"])
+        self.assertEqual(
+            [u.pk for u in got],
+            [u.pk for u in sorted(
+                [self.users[1], self.users[2]],
+                key=lambda u: u.date_joined, reverse=True,
+            )],
+        )
+
+    def test_fans(self):
+        from favorites.models import Favorite
+        Favorite.objects.create(
+            user=self.users[1], project=self.projects[0])
+        Favorite.objects.create(
+            user=self.users[2], project=self.projects[1])
+        Favorite.objects.create(
+            user=self.me, project=self.projects[0])
+        response = self.client.get(self.url, {"filter": "fans"})
+        self.assertEqual(response.status_code, 200)
+        got = list(response.context["users"])
+        self.assertEqual(
+            [u.pk for u in got],
+            [u.pk for u in sorted(
+                [self.users[1], self.users[2]],
+                key=lambda u: u.date_joined, reverse=True,
+            )],
+        )
+
     def test_bogus_filter_returns_full_list(self):
         response = self.client.get(self.url, {"filter": "bogus"})
         self.assertEqual(response.status_code, 200)
@@ -105,6 +143,14 @@ class UserListFilterTests(TestCase):
     def test_queries_teammates(self):
         with self.assertNumQueries(4):
             self.client.get(self.url, {"filter": "teammates"})
+
+    def test_queries_favorite_authors(self):
+        with self.assertNumQueries(3):
+            self.client.get(self.url, {"filter": "favorite_authors"})
+
+    def test_queries_fans(self):
+        with self.assertNumQueries(3):
+            self.client.get(self.url, {"filter": "fans"})
 
     def test_queries_bogus(self):
         with self.assertNumQueries(4):
